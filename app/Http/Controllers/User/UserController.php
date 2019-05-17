@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Redis;
+use App\Model\OrderModel;
 class UserController extends Controller
 {
     //接受 lumen api传过来的注册信息q
@@ -100,4 +101,158 @@ class UserController extends Controller
         $token=substr(sha1(time().$id.$str),5,15);
         return $token;
     }
+    //商品详情
+        public function goodslist(){
+            $id=$_GET['id'];
+            //dd($id);
+           $where=[
+               'g_id'=>$id
+           ];
+           $data=DB::table('goods')->where($where)->first();
+          // dd($data);
+           if($data){
+                $arr=[
+                    'res'=>200,
+                    'msg'=>'获得商品信息成功',
+                    'goods_name'=>$data->goods_name,
+                    'goods_price'=>$data->goods_price,
+                    'g_id'=>$data->g_id
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);
+           }else{
+                $arr=[
+                    'res'=>200,
+                    'msg'=>'获得商品信息失败'
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);
+           }
+        }
+    //购物车
+        public function cara(){
+            $g_id=$_GET['id'];
+            $api_id=$_GET['api_id'];
+            $where=[
+                'g_id'=>$g_id
+            ];
+            $res=DB::table('goods')->where($where)->first();
+            $info=[
+                'goods_name'=>$res->goods_name,
+                'goods_price'=>$res->goods_price,
+                'goods_id'=>$res->g_id,
+                'u_id'=>$api_id,
+                'session_id'=>'1',
+                'add_time'=>time()
+            ];
+            //加入购物车
+            $arr=DB::table('cart')->insert($info);
+            if($arr){
+                $arr=[
+                    'res'=>200,
+                    'msg'=>'加入购物车成功'
+ 
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);   
+            }else{
+                $arr=[
+                    'res'=>40001,
+                    'msg'=>'加入购物车失败'
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);   
+            }
+
+           
+        }
+    //购物车展示
+        public function carlist(){
+            $u_id=$_GET['u_id'];
+            //echo $u_id;
+             $carwhere=[
+                'u_id'=>$u_id,
+                'is_status'=>0
+            ];
+            $car=DB::table('cart')->where($carwhere)->get();
+            //dd($car);
+            if($car){
+                echo json_encode($car,JSON_UNESCAPED_UNICODE);
+            }else{
+                $arr=[
+                    'res'=>40001,
+                    'msg'=>'获得购物车信息失败'
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);   
+            }
+        }
+    //生成订单
+        public function order(){
+            DB::beginTransaction(); //开启事务
+            $u_id=$_GET['u_id'];
+            $price=$_GET['price'];
+            $g_id=$_GET['g_id'];
+            //添加订单表
+            $info=[
+                'u_id'=>$u_id,
+                'order_sn'=>$this->ordersn(),
+                'order_amount'=>$price,
+                'add_time'=>time(),
+            
+            ];
+            //获得订单id
+            $id=OrderModel::insertGetId($info);
+            //echo $id;
+            $goodsinfo=DB::table('goods')->where(['g_id'=>$g_id])->first();
+            $carinfo=[
+                'o_id'=>$id,
+                'goods_id'=>$g_id,
+                'goods_name'=>$goodsinfo->goods_name,
+                'goods_price'=>$goodsinfo->goods_price,
+               
+            ];
+            //添加订单商品表
+            $res=DB::table('order_detail')->insert($carinfo);
+            if($id&&$res){
+                 //如果语句执行成功就进行提交
+                    DB::commit();
+                    $arr=[
+                        'res'=>200,
+                        'msg'=>'生成订单成功'
+                    ];
+                    return json_encode($arr,JSON_UNESCAPED_UNICODE);   
+            }else{
+                //如果失败就回滚
+                DB::rollback();
+                $arr=[
+                    'res'=>40001,
+                    'msg'=>'生成订单失败'
+                ];
+                return json_encode($arr,JSON_UNESCAPED_UNICODE);   
+            }
+        }
+    //生成订单号
+       function ordersn(){
+
+        $str=Str::random(10);
+        $a=substr(md5($str.time()),5,10);
+        return $a;
+    }
+    //订单展示
+        public function orderlist(){
+            $u_id=$_GET['u_id'];
+            //echo $u_id;
+            $where=[
+                'u_id'=>$u_id
+            ];
+
+           $arr= DB::table('order')
+            ->join('order_detail', 'order.o_id', '=', 'order_detail.o_id')
+            ->select('order_sn', 'goods_name', 'goods_price')
+            ->where($where)
+            ->get();
+            //dd($res);
+       
+           echo  json_encode($arr,JSON_UNESCAPED_UNICODE);
+           
+        }
+
+    
+
 }

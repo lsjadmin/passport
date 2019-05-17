@@ -20,3 +20,11 @@ Route::get('/', function () {
 Route::post('/user/reg','User\UserController@reg'); //接受 lumen api传过来的注册信息
 Route::post('/user/login','User\UserController@login'); //接受 lumen api传过来的登陆信息
 Route::get('/user/user','User\UserController@user'); //接受 lumen 个人中心穿过来的信息
+
+Route::get('/user/goodslist','User\UserController@goodslist'); //接受 lumen 个人中心穿过来的信息
+Route::get('/user/cara','User\UserController@cara'); //接受 lumen 加入购物车过来的信息
+Route::get('/user/carlist','User\UserController@carlist'); //接受 lumen 购物车展示过来的信息
+
+Route::get('/user/order','User\UserController@order'); //接受 lumen 订单展示过来的信息
+
+Route::get('/user/orderlist','User\UserController@orderlist'); //接受 lumen 订单展示过来的信息
