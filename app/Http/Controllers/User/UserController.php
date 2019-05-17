@@ -252,6 +252,13 @@ class UserController extends Controller
            echo  json_encode($arr,JSON_UNESCAPED_UNICODE);
            
         }
+    //支付宝支付
+        public function ordera(){
+            //接受订单号
+            $order=$_GET['order'];
+           // dd($order);
+            return view('order.order',['order'=>$order]);
+        }
 
     
 

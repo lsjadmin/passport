@@ -28,3 +28,10 @@ Route::get('/user/carlist','User\UserController@carlist'); //接受 lumen 购物
 Route::get('/user/order','User\UserController@order'); //接受 lumen 订单展示过来的信息
 
 Route::get('/user/orderlist','User\UserController@orderlist'); //接受 lumen 订单展示过来的信息
+//支付宝支付
+
+Route::get('/user/ordera','User\UserController@ordera'); //支付宝支付
+
+Route::get('/ali/ali','Ali\AliControler@pay'); //接受 lumen 订单展示过来的信息
+Route::get('/ali/notify','Ali\AliControler@notify'); //微信支付异步
+Route::get('/ali/aliReturn','Ali\AliControler@aliReturn'); //微信支付同步
