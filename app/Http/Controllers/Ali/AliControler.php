@@ -148,7 +148,24 @@ class AliControler extends Controller
         $log_str = "\n>>>>>> " .date('Y-m-d H:i:s') . ' '.$p . " \n";
         file_put_contents('logs/alipay_notify.log',$log_str,FILE_APPEND);
         echo 'success';
-        //TODO 验签 更新订单状态
+        // //TODO 验签 更新订单状态
+        $data=json_decode($p,true);
+        //判断是否支付成功
+        if($data['trade_status']=='TRADE_SUCCESS'){
+        
+                $where=[
+                    'order_sn'=>$data['out_trade_no']
+                ];
+                $info=[
+                    'order_amount'=>$data['receipt_amount'],
+                    'pay_time'=>strtotime($data['notify_time']),
+                    'is_status'=>1
+                ];
+                OrderModel::where($where)->update($info);
+        }
+        
+
+       
     }
     /**
      * 支付宝同步通知
