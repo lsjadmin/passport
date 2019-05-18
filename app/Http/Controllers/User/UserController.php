@@ -239,7 +239,8 @@ class UserController extends Controller
             $u_id=$_GET['u_id'];
             //echo $u_id;
             $where=[
-                'u_id'=>$u_id
+                'u_id'=>$u_id,
+                'is_status'=>0
             ];
 
            $arr= DB::table('order')
